@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NicheGen AI | Dominate Your Industry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;400;900&display=swap" rel="stylesheet">
+    <style>
+        @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+        body { background-color: #000; font-family: 'Geist', sans-serif; color: #fff; overflow-x: hidden; }
+        
+        .noise::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.15; pointer-events: none; z-index: 50;
+        }
+
+        .kinetic-bg {
+            position: fixed; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% -10%, #1a1a40 0%, transparent 50%),
+                        radial-gradient(circle at 0% 100%, #0a0a0a 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .border-beam {
+            position: relative; background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px; overflow: hidden;
+        }
+        .border-beam::after {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(var(--angle), transparent, #8B5CF6, transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude; padding: 1px;
+            animation: rotate 4s linear infinite;
+        }
+        @keyframes rotate { to { --angle: 360deg; } }
+
+       .shimmer-text {
+        background: linear-gradient(90deg, #555 0%, #fff 50%, #555 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text; /* ✅ Warning solve ho gayi */
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 3s linear infinite;
+    }
+        @keyframes shimmer { to { background-position: 200% center; } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="noise">
+    <div class="kinetic-bg"></div>
+<nav class="fixed top-0 left-0 w-full z-[100] border-b border-white/5 bg-black/20 backdrop-blur-md px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+        
+        <div class="flex items-center gap-4">
+            <div class="w-8 h-8 bg-white flex items-center justify-center rounded-sm">
+                <span class="text-black font-black text-xl tracking-tighter">N</span>
+            </div>
+            <div class="hidden md:block">
+                <p class="text-[10px] font-black uppercase tracking-[0.3em] leading-none">NicheGen AI</p>
+                <p class="text-[8px] text-gray-600 font-bold uppercase tracking-widest mt-1">Global Intelligence // v3.0</p>
+            </div>
+        </div>
+
+        <div class="hidden md:flex items-center gap-10">
+            <a href="#features" class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-white transition">Capabilities</a>
+            <a href="#how" class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-white transition">Protocol</a>
+            <a href="#pricing" class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-white transition">Architecture</a>
+            <a href="#testimonials" class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-white transition">Trust</a>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <div class="hidden lg:flex items-center gap-2 px-3 py-1 border border-indigo-500/20 rounded-full bg-indigo-500/5">
+                <span class="w-1 h-1 rounded-full bg-indigo-500 animate-pulse"></span>
+                <span class="text-[9px] font-black uppercase tracking-widest text-indigo-400">Nodes: Online</span>
+            </div>
+            <button class="px-5 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition rounded-sm">
+                Login
+            </button>
+        </div>
+    </div>
+</nav>
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] border border-white/10 rounded-full p-2 px-6 flex items-center gap-6 bg-black/60 backdrop-blur-2xl">
+        <a href="#home" class="text-[10px] font-bold uppercase tracking-widest text-purple-400">Gen</a>
+        <a href="#how" class="text-[10px] font-bold uppercase tracking-widest text-gray-500">How</a>
+        <a href="#pricing" class="text-[10px] font-bold uppercase tracking-widest text-gray-500">Price</a>
+    </nav>
+
+    <main class="px-6 max-w-5xl mx-auto">
+        <section id="home" class="pt-32 pb-24 relative overflow-hidden">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_-10%,#1e1e3f_0%,transparent_60%)] -z-10 opacity-50"></div>
+
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="inline-flex items-center gap-2 text-[9px] uppercase tracking-[0.4em] text-indigo-500 mb-8 font-black">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_#5e5ce6]"></span>
+            System v3.0 Active
+        </div>
+
+        <h1 class="text-7xl md:text-[120px] font-black tracking-tighter leading-[0.8] mb-10">
+            OWN YOUR <br> 
+            <span class="shimmer-text italic">NICHE.</span>
+        </h1>
+
+        <p class="text-gray-500 text-lg md:text-xl mb-12 max-w-xl leading-tight border-l-2 border-indigo-600 pl-6">
+            Deploy proprietary intelligence to engineer <span class="text-white">Unfair Authority</span>. Global precision. Indian context. Zero generic fluff.
+        </p>
+
+        <div class="group relative max-w-xl">
+            <div class="relative bg-black border border-white/10 flex flex-col md:flex-row items-stretch group-focus-within:border-indigo-500/50 transition-all duration-500 shadow-2xl">
+                <input type="text" 
+                       placeholder="Target Niche (e.g. Fintech Mumbai)..." 
+                       class="w-full bg-transparent py-5 px-6 text-lg focus:outline-none placeholder:text-gray-800 font-mono tracking-tighter text-indigo-100">
+                
+                <button class="bg-white text-black px-10 py-4 font-black text-xs uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition active:scale-95">
+                    Execute
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+       <section id="features" class="py-20">
+    <div class="flex items-center justify-between mb-10">
+        <h2 class="text-xs uppercase tracking-[0.4em] text-indigo-500 font-black">Deep Tech Capabilities</h2>
+        <div class="flex gap-1 md:hidden">
+            <div class="w-4 h-1 bg-indigo-500 rounded-full"></div>
+            <div class="w-1 h-1 bg-white/20 rounded-full"></div>
+            <div class="w-1 h-1 bg-white/20 rounded-full"></div>
+        </div>
+    </div>
+
+    <div class="flex overflow-x-auto gap-5 no-scrollbar pb-6">
+        
+        <div class="border-beam min-w-[300px] h-[380px] p-8 flex flex-col justify-between">
+            <div class="text-[10px] text-indigo-400 font-mono tracking-tighter">CORE_ENGINE // 01</div>
+            <div>
+                <h3 class="text-2xl font-black leading-tight uppercase italic tracking-tighter mb-4">Semantic <br>Precision Mapping.</h3>
+                <p class="text-gray-500 text-xs leading-relaxed">
+                    Moving beyond keyword matching. Our engine utilizes <span class="text-white">Linguistic Semantics</span> to understand industry-specific nuances, slang, and technical jargon across Global and Indian markets.
+                </p>
+            </div>
+        </div>
+
+        <div class="min-w-[300px] h-[380px] border border-white/5 rounded-[24px] bg-white/[0.02] p-8 flex flex-col justify-between hover:bg-white/[0.04] transition">
+            <div class="text-[10px] text-gray-600 font-mono tracking-tighter">DATA_STREAM // 02</div>
+            <div>
+                <h3 class="text-2xl font-black leading-tight uppercase italic tracking-tighter mb-4">Real-Time Viral <br>Synthesizer.</h3>
+                <p class="text-gray-500 text-xs leading-relaxed">
+                    Integrated with a live <span class="text-white">API-less data scraper</span> that monitors top 0.1% of high-engagement niche content on X, LinkedIn, and Medium to replicate viral DNA.
+                </p>
+            </div>
+        </div>
+
+        <div class="min-w-[300px] h-[380px] border border-white/5 rounded-[24px] bg-white/[0.02] p-8 flex flex-col justify-between hover:bg-white/[0.04] transition">
+            <div class="text-[10px] text-gray-600 font-mono tracking-tighter">STRATEGY_AI // 03</div>
+            <div>
+                <h3 class="text-2xl font-black leading-tight uppercase italic tracking-tighter mb-4">Market Gap <br>Analyzer.</h3>
+                <p class="text-gray-500 text-xs leading-relaxed">
+                    AI cross-references your competitors' output to identify <span class="text-white">"Information Voids"</span>. It crafts content that addresses what your competitors are too afraid (or too generic) to talk about.
+                </p>
+            </div>
+        </div>
+
+        <div class="min-w-[300px] h-[380px] border border-white/5 rounded-[24px] bg-white/[0.02] p-8 flex flex-col justify-between hover:bg-white/[0.04] transition">
+            <div class="text-[10px] text-gray-600 font-mono tracking-tighter">GEO_ADAPT // 04</div>
+            <div>
+                <h3 class="text-2xl font-black leading-tight uppercase italic tracking-tighter mb-4">Multi-Regional <br>Dialect Sync.</h3>
+                <p class="text-gray-500 text-xs leading-relaxed">
+                    Seamlessly toggle between <span class="text-white">Silicon Valley Professionalism</span> and <span class="text-white">Indian Market Context</span>. The AI adapts its "vibe" to the specific purchasing power of the target region.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+      <section id="how" class="py-24 border-t border-white/5 relative">
+    <div class="max-w-4xl mx-auto px-6">
+        <h2 class="text-xs uppercase tracking-[0.5em] text-indigo-500 font-black mb-16 text-center">The Deployment Protocol</h2>
+        
+        <div class="relative space-y-24">
+            <div class="absolute left-[19px] top-2 bottom-2 w-[2px] bg-gradient-to-b from-indigo-600 via-purple-600 to-transparent opacity-20 hidden md:block"></div>
+
+            <div class="relative flex flex-col md:flex-row gap-8 group">
+                <div class="flex-none w-10 h-10 rounded-full bg-black border-2 border-indigo-600 flex items-center justify-center font-black text-indigo-400 z-10 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] transition">
+                    1
+                </div>
+                <div class="glass p-8 rounded-[24px] border border-white/5 flex-1 hover:border-indigo-500/30 transition duration-500">
+                    <h4 class="text-xl font-black uppercase italic tracking-tighter mb-3">Contextual Data Injection</h4>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-4">
+                        Input your industry parameters. Our engine synchronizes <span class="text-white">Global Market Trends</span> with <span class="text-white">Regional Consumer Psychology</span> to identify high-intent content opportunities.
+                    </p>
+                    <div class="flex gap-2">
+                        <span class="text-[9px] px-2 py-1 bg-white/5 rounded-md border border-white/10 text-gray-400">Trend Extraction</span>
+                        <span class="text-[9px] px-2 py-1 bg-white/5 rounded-md border border-white/10 text-gray-400">Geo-Mapping</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row gap-8 group">
+                <div class="flex-none w-10 h-10 rounded-full bg-black border-2 border-purple-600 flex items-center justify-center font-black text-purple-400 z-10 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.5)] transition">
+                    2
+                </div>
+                <div class="glass p-8 rounded-[24px] border border-white/5 flex-1 hover:border-purple-500/30 transition duration-500">
+                    <h4 class="text-xl font-black uppercase italic tracking-tighter mb-3">Neural Strategy Mapping</h4>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-4">
+                        Beyond simple generation. The engine architect’s a <span class="text-white italic">7-Day Authority Matrix</span>, identifying content gaps that position you as the definitive leader in your micro-niche.
+                    </p>
+                    <div class="flex gap-2">
+                        <span class="text-[9px] px-2 py-1 bg-purple-500/10 rounded-md border border-purple-500/20 text-purple-400">Pattern Recognition</span>
+                        <span class="text-[9px] px-2 py-1 bg-purple-500/10 rounded-md border border-purple-500/20 text-purple-400">Gap Analysis</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row gap-8 group">
+                <div class="flex-none w-10 h-10 rounded-full bg-black border-2 border-indigo-400 flex items-center justify-center font-black text-indigo-300 z-10 group-hover:shadow-[0_0_15px_rgba(129,140,248,0.5)] transition">
+                    3
+                </div>
+                <div class="glass p-8 rounded-[24px] border border-white/5 flex-1 hover:border-indigo-400/30 transition duration-500">
+                    <h4 class="text-xl font-black uppercase italic tracking-tighter mb-3">Omni-Channel Deployment</h4>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-4">
+                        Receive <span class="text-white uppercase font-bold text-[10px]">Zero-Edit Ready</span> assets: High-retention LinkedIn Threads, viral Twitter hooks, and SEO-optimized long-form content.
+                    </p>
+                    <div class="flex gap-2">
+                        <span class="text-[9px] px-2 py-1 bg-white text-black rounded-md font-bold uppercase tracking-tighter">Instant Export</span>
+                        <span class="text-[9px] px-2 py-1 bg-white text-black rounded-md font-bold uppercase tracking-tighter">Live Publish</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="why" class="py-24 border-t border-white/5 relative overflow-hidden">
+    <div class="absolute top-1/2 left-0 w-64 h-64 bg-indigo-600/10 blur-[120px] -z-10"></div>
+    
+    <div class="max-w-5xl mx-auto">
+        <h2 class="text-xs uppercase tracking-[0.4em] text-indigo-500 mb-4 font-black">Institutional Grade</h2>
+        <h3 class="text-4xl md:text-6xl font-black tracking-tighter mb-16 italic">WHY <span class="shimmer-text">NICHEGEN?</span></h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            
+            <div class="glass rounded-[32px] p-8 border border-white/10">
+                <h4 class="text-sm uppercase tracking-widest text-gray-400 mb-8 font-bold">The Performance Gap</h4>
+                <div class="space-y-8">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Niche Context Awareness</span>
+                            <span class="text-indigo-400">99.2%</span>
+                        </div>
+                        <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-indigo-500 h-full w-[99.2%]"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Standard AI Model</span>
+                            <span class="text-gray-600">42.0%</span>
+                        </div>
+                        <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-gray-800 h-full w-[42%]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 space-y-4">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1 w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-500/50 flex items-center justify-center text-[10px]">✓</div>
+                        <p class="text-sm text-gray-300"><span class="font-bold text-white tracking-tight">Indian Context Ready:</span> Handles Hinglish, regional slang, and local market sentiments effortlessly.</p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1 w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-500/50 flex items-center justify-center text-[10px]">✓</div>
+                        <p class="text-sm text-gray-300"><span class="font-bold text-white tracking-tight">Global Standards:</span> Optimized for US/UK/EU markets with native-level vocabulary and cultural hooks.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass p-6 rounded-[24px] border border-white/5 flex flex-col justify-between">
+                    <div class="text-indigo-500 font-black text-2xl uppercase italic">Zero</div>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-2">Generic Fluff Guarantee</p>
+                </div>
+                <div class="glass p-6 rounded-[24px] border border-white/5 flex flex-col justify-between">
+                    <div class="text-white font-black text-2xl uppercase italic">4.5x</div>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-2">Higher Engagement Rate</p>
+                </div>
+                <div class="glass p-6 rounded-[24px] border border-white/5 col-span-2 relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 group-hover:scale-110 transition duration-700">⚡</div>
+                    <h4 class="text-lg font-bold italic uppercase">Linguistic Versatility</h4>
+                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">Whether you're selling real estate in Mumbai or SaaS in Silicon Valley, our engine adapts its DNA to match the local buyer's mindset.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+<section id="testimonials" class="py-24 border-t border-white/5 overflow-hidden">
+    <div class="max-w-5xl mx-auto px-6 mb-16 text-center">
+        <h2 class="text-xs uppercase tracking-[0.4em] text-indigo-500 font-black mb-4">Trust Protocol</h2>
+        <h3 class="text-3xl md:text-5xl font-black italic uppercase italic">Voices of <span class="shimmer-text">Authority.</span></h3>
+    </div>
+
+    <div class="relative flex">
+        <div class="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black to-transparent z-10"></div>
+        <div class="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black to-transparent z-10"></div>
+
+        <div class="animate-scroll gap-6">
+            <div class="testimonial-card w-[350px] p-8 rounded-[32px] border border-white/5 flex flex-col justify-between h-[250px]">
+                <p class="text-gray-400 text-sm leading-relaxed italic">"Finally, an AI that understands the nuances of Silicon Valley SaaS without the generic fluff. The Authority Matrix is a game changer."</p>
+                <div class="flex items-center gap-4 mt-6">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">JD</div>
+                    <div>
+                        <h4 class="text-xs font-black uppercase">James Dalton</h4>
+                        <p class="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Founder, Stealth AI (NYC)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card w-[350px] p-8 rounded-[32px] border border-white/5 flex flex-col justify-between h-[250px]">
+                <p class="text-gray-400 text-sm leading-relaxed italic">"Indian market sentiments aur Hinglish jargon ka flow ekdm spot on hai. It handles my Bangalore real-estate niche perfectly."</p>
+                <div class="flex items-center gap-4 mt-6">
+                    <div class="w-10 h-10 rounded-full bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold">AK</div>
+                    <div>
+                        <h4 class="text-xs font-black uppercase">Arjun Kapoor</h4>
+                        <p class="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Growth Lead, PropTech India</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card w-[350px] p-8 rounded-[32px] border border-white/5 flex flex-col justify-between h-[250px]">
+                <p class="text-gray-400 text-sm leading-relaxed italic">"0.1% engagement rate on X used to be a dream. NicheGen's viral synthesizer made it a daily reality for our agency clients."</p>
+                <div class="flex items-center gap-4 mt-6">
+                    <div class="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold">SC</div>
+                    <div>
+                        <h4 class="text-xs font-black uppercase">Sarah Chen</h4>
+                        <p class="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Creative Director, Lume Media</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card w-[350px] p-8 rounded-[32px] border border-white/5 flex flex-col justify-between h-[250px]">
+                <p class="text-gray-400 text-sm leading-relaxed italic">"The context injection tool is surgical. It found pain points in the London Fintech market we didn't even know existed."</p>
+                <div class="flex items-center gap-4 mt-6">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">RB</div>
+                    <div>
+                        <h4 class="text-xs font-black uppercase">Richard Blake</h4>
+                        <p class="text-[9px] text-gray-600 uppercase tracking-widest font-bold">Strategy Head, Neobank UK</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card w-[350px] p-8 rounded-[32px] border border-white/5 flex flex-col justify-between h-[250px] opacity-50">
+                 <p class="text-gray-400 text-sm leading-relaxed italic">"Finally, an AI that understands the nuances of Silicon Valley SaaS without the generic fluff..."</p>
+                 <div class="flex items-center gap-4 mt-6">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">JD</div>
+                    <h4 class="text-xs font-black uppercase">James Dalton</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-350px * 4)); } /* Adjust based on card width + gap */
+}
+
+.animate-scroll {
+    animation: scroll 40s linear infinite;
+    display: flex;
+    width: max-content;
+}
+
+.animate-scroll:hover {
+    animation-play-state: paused;
+}
+
+.testimonial-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(10px);
+}</style>
+</section>
+
+<section id="pricing" class="py-24 border-t border-white/5">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-xs uppercase tracking-[0.5em] text-indigo-500 font-black mb-4">Pricing Architecture</h2>
+            <h3 class="text-4xl md:text-5xl font-black italic uppercase italic">Scale Your <span class="shimmer-text">Influence.</span></h3>
+            <p class="text-gray-500 mt-4 text-sm">Flexible plans for local creators and global agencies.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <div class="glass p-8 rounded-[32px] border border-white/10 flex flex-col justify-between hover:border-white/20 transition">
+                <div>
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400 mb-6">Starter</h4>
+                    <div class="mb-8">
+                        <span class="text-4xl font-black">$19</span>
+                        <span class="text-gray-600 text-xs ml-2">/ month</span>
+                        <div class="text-[10px] text-indigo-400 mt-1 uppercase font-bold">~ ₹1,599 approx</div>
+                    </div>
+                    <ul class="space-y-4 text-xs text-gray-500">
+                        <li class="flex items-center gap-2"><span class="text-indigo-500">⚡</span> 10 Niche Campaigns / mo</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-500">⚡</span> Global English Support</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-500">⚡</span> Twitter & LinkedIn Formats</li>
+                        <li class="flex items-center gap-2 text-gray-700">✕ Brand Voice Training</li>
+                    </ul>
+                </div>
+                <button class="w-full mt-10 py-4 rounded-xl border border-white/10 text-xs font-bold hover:bg-white hover:text-black transition">GET STARTED</button>
+            </div>
+
+            <div class="border-beam p-[1px]">
+                <div class="bg-black rounded-[23px] p-8 h-full flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-indigo-600 text-[8px] px-3 py-1 font-black uppercase rounded-bl-lg tracking-widest">Most Popular</div>
+                    <div>
+                        <h4 class="text-sm font-bold uppercase tracking-widest text-indigo-400 mb-6">Standard</h4>
+                        <div class="mb-8">
+                            <span class="text-5xl font-black">$49</span>
+                            <span class="text-gray-600 text-xs ml-2">/ month</span>
+                            <div class="text-[10px] text-indigo-400 mt-1 uppercase font-bold">~ ₹3,999 approx</div>
+                        </div>
+                        <ul class="space-y-4 text-xs text-gray-300">
+                            <li class="flex items-center gap-2"><span class="text-indigo-500">✔</span> Unlimited Niche Analysis</li>
+                            <li class="flex items-center gap-2"><span class="text-indigo-500">✔</span> Hinglish & Regional Dialects</li>
+                            <li class="flex items-center gap-2"><span class="text-indigo-500">✔</span> Custom Brand Voice (1 Profile)</li>
+                            <li class="flex items-center gap-2"><span class="text-indigo-500">✔</span> SEO Blog Post Generator</li>
+                        </ul>
+                    </div>
+                    <button class="w-full mt-10 py-4 rounded-xl bg-white text-black text-xs font-black shadow-[0_0_20px_rgba(255,255,255,0.2)]">UPGRADE TO STANDARD</button>
+                </div>
+            </div>
+
+            <div class="glass p-8 rounded-[32px] border border-white/10 flex flex-col justify-between hover:border-white/20 transition">
+                <div>
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400 mb-6">Pro Agency</h4>
+                    <div class="mb-8">
+                        <span class="text-4xl font-black">$99</span>
+                        <span class="text-gray-600 text-xs ml-2">/ month</span>
+                        <div class="text-[10px] text-indigo-400 mt-1 uppercase font-bold">~ ₹8,200 approx</div>
+                    </div>
+                    <ul class="space-y-4 text-xs text-gray-500">
+                        <li class="flex items-center gap-2"><span class="text-indigo-500">🔥</span> Multi-Brand Management</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-500">🔥</span> Priority GPU Neural Engine</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-500">🔥</span> Team Collaboration (5 Seats)</li>
+                        <li class="flex items-center gap-2"><span class="text-indigo-500">🔥</span> API Access for Custom Workflows</li>
+                    </ul>
+                </div>
+                <button class="w-full mt-10 py-4 rounded-xl border border-white/10 text-xs font-bold hover:bg-white hover:text-black transition">CONTACT SALES</button>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<section class="py-32 relative overflow-hidden">
+    <div class="absolute inset-0 bg-indigo-600/5 -z-10"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-indigo-500/10 blur-[150px] -z-10 rounded-full"></div>
+
+    <div class="max-w-4xl mx-auto px-6 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[9px] uppercase tracking-[0.4em] text-gray-400 mb-10 font-black">
+            Available Slots: 14/100
+        </div>
+
+        <h2 class="text-5xl md:text-8xl font-black tracking-tighter leading-[0.85] mb-8">
+            STOP POSTING. <br>
+            <span class="shimmer-text italic">START DOMINATING.</span>
+        </h2>
+
+        <p class="text-gray-500 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-tight">
+            The era of generic AI is over. Deploy your <span class="text-white">proprietary niche engine</span> today and claim your position as the category leader.
+        </p>
+
+        <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+            <button class="group relative px-12 py-6 bg-white text-black font-black text-sm uppercase tracking-[0.2em] rounded-xs overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]">
+                <span class="relative z-10">Get Full Access Now</span>
+                <div class="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            </button>
+            
+            <a href="#pricing" class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 hover:text-white transition">
+                View Architecture // Pricing
+            </a>
+        </div>
+
+        <p class="mt-16 text-[9px] text-gray-700 uppercase tracking-widest font-bold">
+            No credit card required for initial setup &bull; Global deployment ready
+        </p>
+    </div>
+</section>
+
+        <footer class="pt-10 pb-32 text-center border-t border-white/5">
+            <div class="text-gray-700 text-[10px] uppercase tracking-widest font-bold">
+                Built for High-Growth Founders &bull; 2026
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+            const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+            document.querySelector('.kinetic-bg').style.transform = `translate(${moveX}px, ${moveY}px)`;
+        });
+    </script>
+</body>
+</html>
