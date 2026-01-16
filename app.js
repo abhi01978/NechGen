@@ -5,6 +5,7 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 
@@ -93,13 +94,14 @@ app.get('/api/chats', protect, async (req, res) => {
     res.json(chats);
 });
 // Get specific chat by ID
-app.get('/api/chats/:id', protect, async (req, res) => {
+// Delete Chat Route
+app.delete('/api/chats/:id', protect, async (req, res) => {
     try {
-        const chat = await Chat.findOne({ _id: req.params.id, user: req.user._id });
+        const chat = await Chat.findOneAndDelete({ _id: req.params.id, user: req.user._id });
         if (!chat) return res.status(404).json({ message: "Chat not found" });
-        res.json(chat);
+        res.json({ message: "Chat deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching chat history" });
+        res.status(500).json({ message: "Server Error" });
     }
 });
 // 2.
@@ -135,6 +137,7 @@ async function getFullSearchData(userPrompt) {
 }
 
 // --- MAIN GENERATE ROUTE ---
+// --- MAIN GENERATE ROUTE ---
 app.post('/api/generate', protect, async (req, res) => {
     try {
         const { prompt, chatId } = req.body;
@@ -144,64 +147,129 @@ app.post('/api/generate', protect, async (req, res) => {
             day: 'numeric', month: 'long', year: 'numeric'
         });
 
+        // 1. Chat fetch ya create karna (same as before)
         if (chatId) {
             currentChat = await Chat.findOne({ _id: chatId, user: req.user._id });
         }
+
         if (!currentChat) {
+            const cleanTitle = prompt.includes('TOPIC/GOAL:') 
+                ? prompt.split('TOPIC/GOAL:')[1]?.split('\n')[0].trim().substring(0, 40)
+                : prompt.substring(0, 30);
+
             currentChat = new Chat({ 
                 user: req.user._id, 
-                title: prompt.substring(0, 30), 
+                title: cleanTitle || "New Niche", 
                 messages: [] 
             });
         }
 
-        // 1. Search with Sources
+        // 2. Real-time Search (same)
         const { textContext, sources } = await getFullSearchData(prompt);
 
+        // 3. Conversation Memory
         const memory = currentChat.messages.map(m => ({
             role: m.role,
             content: m.content
         }));
 
-        // 2. Groq AI Completion
-        const completion = await groq.chat.completions.create({
+        // ────────────────────────────────────────────────
+        // USER LENGTH → STRICT TOKEN LIMIT MAPPING
+        const lengthConfig = {
+            "Short (100-200 words)": { maxTokens: 180, instruction: "Very short & punchy, max 3-5 points, under 150 words" },
+            "Short":                 { maxTokens: 180, instruction: "Very short & punchy, max 3-5 points, under 150 words" },
+            "Medium":                { maxTokens: 350, instruction: "Balanced, 5-8 points, 200-300 words" },
+            "Long-form":             { maxTokens: 600, instruction: "Detailed but concise, 8-12 points, up to 450 words" },
+            default:                 { maxTokens: 300, instruction: "Medium length" }
+        };
+
+        // Prompt se length nikaal lo
+        let selectedLength = "Medium"; // fallback
+        const lengthMatch = prompt.match(/CONTENT_LENGTH:\s*([^ \n]+)/i);
+        if (lengthMatch) {
+            selectedLength = lengthMatch[1].trim();
+        }
+
+        const config = lengthConfig[selectedLength] || lengthConfig.default;
+        const maxTokens = config.maxTokens;
+        const lengthInstruction = config.instruction;
+
+        // ────────────────────────────────────────────────
+
+        // Enhanced System Prompt with HARD length rule
+        const systemPrompt = `You are NicheGen AI (v3.0.4) - The Ultimate SaaS & Content Domination Shark.
+        CURRENT DATE: ${currentDate}. YEAR: 2026. Assume advanced AI ecosystem with Agentic AI, Vercel AI SDK, LangChain v0.3+, Pinecone VectorDB.
+        
+        WEB CONTEXT (REAL-TIME 2026 TRENDS): ${textContext}
+        
+        LENGTH RULE - ABSOLUTE & NON-NEGOTIABLE:
+        - STRICTLY follow: ${lengthInstruction}
+        - NEVER exceed ${maxTokens} tokens total output (~${Math.floor(maxTokens * 0.75)} words max).
+        - Short: Max 180 tokens, 3-5 short points only, no fluff.
+        - Medium: Max 350 tokens, 5-8 points.
+        - Long-form: Max 600 tokens, detailed but concise.
+        - If you go over, cut ruthlessly - prioritize punchy over complete.
+
+        ... (baaki sab strict protocols same rakh: tone, structure, X-factor, viral boost, etc.)
+        `;
+
+        // 4. Groq - HARD max_tokens limit
+        const draftCompletion = await groq.chat.completions.create({
             messages: [
-                { 
-                    role: "system", 
-                    content: `You are NicheGen AI (v3.0).
-                    CURRENT DATE: ${currentDate}. YEAR: 2026.
-                    CONTEXT: ${textContext}
-                    TONE: Aggressive, Shark Tank Style, Hinglish.
-                   STRICT FORMATTING RULES:
-1. Use [BOX] style or Emojis for titles.
-2. Sab kuch Bullet Points ya Numbering mein hona chahiye.
-3. "Hinglish" ko thoda aur aggressive aur cool rakho (e.g., "Bhai, market fadd dega ye idea").
-4. Technical Tech Stack zaroor mention karo (jaise: Next.js 16, Supabase, Tailwind V5).
-"STOP GIVING LONG PARAGRAPHS. Use 1-2 lines per point and focus on visual structure (Tables, Bold, Bullets)."
-STRICT OUTPUT PROTOCOL:
-1. TABLES: Always ensure technical mapping is correct (e.g., AI features map to LLM models, not CSS frameworks).
-2. BRAIN-DUMP: Har idea ke saath ek 'Hidden Opportunity' ya 'X-Factor' zaroor batao jo competitors miss kar rahe hain.
-3. TECH STACK: 2026 ke standards use karo (Next.js 16, Vercel AI SDK, LangChain, Pinecone for Vector DB).
-4. VISUALS: Use clear Markdown tables and [BOX] layouts for Pricing and Market Size.`,
-                },
+                { role: "system", content: systemPrompt },
                 ...memory,
-                { role: "user", content: prompt }
+                { role: "user", content: prompt + `\n\nMANDATORY RULE: Output MUST be under ${maxTokens} tokens. Respect length exactly.` }
             ],
             model: "llama-3.3-70b-versatile",
+            temperature: 0.7,
+            max_tokens: maxTokens  // ← Yeh critical line
         });
 
-        const aiResponse = completion.choices[0].message.content;
+        let draftResponse = draftCompletion.choices[0].message.content.trim();
 
-        // 3. Save to DB
+        // 5. Gemini Polish - Strict limit + cut fluff
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // Flash fast hai
+
+        const polishPrompt = `Refine this draft STRICTLY under ${Math.floor(maxTokens * 0.85)} tokens max:
+        Keep aggressive Hinglish tone, punchy structure, platform format, X-factor, viral boost.
+        Cut ANY fluff. Make it sharper, higher-conversion.
+        DO NOT make it longer than the draft - shorten if needed.
+        
+        DRAFT: ${draftResponse}`;
+
+        const polishResult = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: polishPrompt }] }],
+            generationConfig: {
+                maxOutputTokens: Math.floor(maxTokens * 0.85),  // ← Gemini strict limit
+                temperature: 0.6
+            }
+        });
+
+        let polishedResponse = polishResult.response.text().trim();
+
+        // Extra safety: Agar bhi lamba aaya to truncate
+        const charLimit = maxTokens * 4; // rough char estimate (~4 chars per token)
+        if (polishedResponse.length > charLimit) {
+            polishedResponse = polishedResponse.substring(0, charLimit) + "… (shortened for length)";
+        }
+
+        // 6. Save to DB
         currentChat.messages.push({ role: 'user', content: prompt });
-        currentChat.messages.push({ role: 'assistant', content: aiResponse });
+        currentChat.messages.push({ 
+            role: 'assistant', 
+            content: polishedResponse,
+            sources: sources 
+        });
+
+        currentChat.updatedAt = Date.now();
         await currentChat.save();
 
-        // 4. Send Response with Sources
+        // 7. Response to Frontend
         res.json({ 
-            content: aiResponse, 
+            content: polishedResponse, 
             chatId: currentChat._id,
-            sources: sources // Frontend ko links milenge
+            sources: sources 
         });
 
     } catch (error) {
@@ -209,6 +277,7 @@ STRICT OUTPUT PROTOCOL:
         res.status(500).json({ message: "Neural Link Search Failed." });
     }
 });
+
 // --- DATABASE & SERVER START ---
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
