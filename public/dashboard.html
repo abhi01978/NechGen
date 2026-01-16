@@ -55,6 +55,41 @@
             </div>
         </div>
     </aside>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const openMenu = document.getElementById('open-menu');
+    const closeMenu = document.getElementById('close-menu');
+    const overlay = document.getElementById('overlay');
+    const sidebar = document.getElementById('sidebar');
+
+    // Sidebar Khulne ka function
+    if(openMenu) {
+        openMenu.onclick = () => {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Scroll band kar do
+        };
+    }
+
+    // Sidebar Band karne ka function (Overlay click par)
+    if(overlay) {
+        overlay.onclick = () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Scroll wapas chalu
+        };
+    }
+
+    // Sidebar Band karne ka function (X button click par)
+    if(closeMenu) {
+        closeMenu.onclick = () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        };
+    }
+});
+    </script>
 
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-black/50">
@@ -125,7 +160,7 @@
                 <span class="text-[9px] font-black uppercase tracking-widest text-indigo-400">Browsing 2026 Data Streams...</span>
             </div>
 
- <div class="max-w-4xl mx-auto w-full glass-panel rounded-3xl overflow-hidden flex flex-col h-[500px] md:h-[600px] relative">
+ <div class="max-w-4xl mx-auto w-full glass-panel rounded-3xl overflow-hidden flex flex-col h-[400px] md:h-[600px] relative">
     <div id="scanning-line" class="hidden absolute top-0 left-0 w-full h-[1px] bg-indigo-500 shadow-[0_0_15px_indigo] z-20 animate-scan"></div>
     
     <div class="p-5 border-b border-white/5 bg-white/[0.02] flex justify-between items-center flex-shrink-0">
@@ -152,113 +187,105 @@
 <script>
     let activeChatId = null;
 
-    // --- 1. Load History (Cleaned Up Titles) ---
-   async function loadHistory() {
-    const list = document.getElementById('chat-history-list');
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    // --- 1. Load History (Visual Sync) ---
+    async function loadHistory() {
+        const list = document.getElementById('chat-history-list');
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-    try {
-        const response = await fetch('/api/chats', { headers: { 'Authorization': `Bearer ${token}` } });
-        const chats = await response.json();
-        list.innerHTML = '<p class="text-[8px] text-gray-600 uppercase font-black px-3 tracking-[0.2em] mb-4">Past Sessions</p>';
-        
-        chats.forEach(chat => {
-            let displayTitle = chat.title.replace('TOPIC/GOAL:', '').trim();
-            const item = document.createElement('div');
-            item.className = `group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all mb-1 ${activeChatId === chat._id ? 'bg-white/10 border border-indigo-500/30' : 'hover:bg-white/5'}`;
+        try {
+            const response = await fetch('/api/chats', { headers: { 'Authorization': `Bearer ${token}` } });
+            const chats = await response.json();
+            list.innerHTML = '<p class="text-[8px] text-gray-600 uppercase font-black px-3 tracking-[0.2em] mb-4">Past Sessions</p>';
             
-            item.innerHTML = `
-                <div class="flex items-center gap-3 text-[10px] font-bold uppercase truncate flex-1" onclick="openChat('${chat._id}')">
-                    <span class="${activeChatId === chat._id ? 'text-indigo-400' : 'text-gray-600'}">#</span>
-                    <span class="truncate ${activeChatId === chat._id ? 'text-white' : 'text-gray-500'}">${displayTitle}</span>
-                </div>
-                <button onclick="deleteChat(event, '${chat._id}')" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded-md transition-all">
-                    <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            `;
-            list.appendChild(item);
-        });
-    } catch (err) { console.error(err); }
-}
-
-// Delete Function
-async function deleteChat(event, id) {
-    event.stopPropagation(); // Chat open na ho jaye click karne par
-    if (!confirm("Bhai, pakka delete karna hai? Ye wapas nahi aayega!")) return;
-
-    try {
-        const response = await fetch(`/api/chats/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
-
-        if (response.ok) {
-            if (activeChatId === id) {
-                activeChatId = null;
-                document.getElementById('ai-response').innerHTML = '<div class="opacity-30"><p class="text-xs font-mono">Chat deleted. System Ready.</p></div>';
-            }
-            loadHistory(); // List refresh karo
-        }
-    } catch (err) {
-        console.error("Delete Error:", err);
+            chats.forEach(chat => {
+                let displayTitle = chat.title.replace('TOPIC/GOAL:', '').trim();
+                // Check if this chat is the active one
+                const isActive = activeChatId === chat._id;
+                const item = document.createElement('div');
+                item.className = `group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all mb-1 ${isActive ? 'bg-indigo-500/10 border border-indigo-500/30' : 'hover:bg-white/5'}`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-3 text-[10px] font-bold uppercase truncate flex-1" onclick="openChat('${chat._id}')">
+                        <span class="${isActive ? 'text-indigo-400' : 'text-gray-600'}">#</span>
+                        <span class="truncate ${isActive ? 'text-white' : 'text-gray-500'}">${displayTitle}</span>
+                    </div>
+                    <button onclick="deleteChat(event, '${chat._id}')" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded-md transition-all">
+                        <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        } catch (err) { console.error(err); }
     }
-}
 
-    // --- 2. Open Chat (Fixed: Now renders sources from DB) ---
+    // --- 2. Open Chat (The Brain/Memory Loader) ---
     async function openChat(id) {
         try {
-            activeChatId = id;
+            activeChatId = id; // Memory link set
+            const container = document.getElementById('ai-response');
+            container.innerHTML = `<div class="p-4 text-[10px] font-black text-indigo-400 animate-pulse uppercase tracking-widest">🔗 Synchronizing Neural History...</div>`;
+
             const response = await fetch(`/api/chats/${id}`, { 
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } 
             });
             const chat = await response.json();
-            const container = document.getElementById('ai-response');
-            container.innerHTML = "";
+            
+            container.innerHTML = ""; // Clear loader
 
             chat.messages.forEach(msg => {
                 const isAI = msg.role === 'assistant';
-                let sourceHtml = "";
-
-                // Agar message ke saath sources hain, toh unhe render karo
-                if (isAI && msg.sources && msg.sources.length > 0) {
-                    sourceHtml = `
-                        <div class="mt-4 pt-4 border-t border-white/5">
-                            <p class="text-[7px] font-black uppercase text-gray-500 mb-2">Sources Found in History:</p>
-                            <div class="flex flex-wrap gap-2">
-                                ${msg.sources.map(src => `
-                                    <a href="${src.url}" target="_blank" class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] text-gray-400 hover:text-indigo-400 transition-all font-bold">
-                                        ${src.title.substring(0, 20)}... ↗
-                                    </a>`).join('')}
-                            </div>
-                        </div>`;
-                }
-
-                container.innerHTML += `
-                    <div class="mb-8">
-                        <span class="text-[8px] font-black uppercase tracking-widest ${isAI ? 'text-indigo-400' : 'text-gray-600'}">
-                            ${isAI ? 'Neural Engine Output' : 'Operator Input'}
-                        </span>
-                        <div class="mt-2 ${isAI ? 'prose prose-invert text-gray-300 text-sm' : 'text-indigo-100/70 text-sm font-mono'}">
-                            ${isAI ? marked.parse(msg.content) : msg.content}
-                        </div>
-                        ${sourceHtml}
-                    </div>`;
+                renderMessageBlock(isAI, msg.content, msg.sources || []);
             });
+
             container.scrollTop = container.scrollHeight;
-            loadHistory();
-        } catch (err) { console.error(err); }
+            loadHistory(); // Sidebar update to show active state
+        } catch (err) { 
+            console.error(err);
+            document.getElementById('ai-response').innerHTML = "Neural Link Failed.";
+        }
     }
 
-    // --- 3. Generate Logic ---
+    // Helper to render messages consistently
+    function renderMessageBlock(isAI, content, sources) {
+        const container = document.getElementById('ai-response');
+        let sourceHtml = "";
+
+        if (isAI && sources && sources.length > 0) {
+            sourceHtml = `
+                <div class="mt-4 pt-4 border-t border-white/5">
+                    <p class="text-[7px] font-black uppercase text-gray-500 mb-2">Sources Found in History:</p>
+                    <div class="flex flex-wrap gap-2">
+                        ${sources.map(src => `
+                            <a href="${src.url}" target="_blank" class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] text-gray-400 hover:text-indigo-400 transition-all font-bold">
+                                ${src.title.substring(0, 20)}... ↗
+                            </a>`).join('')}
+                    </div>
+                </div>`;
+        }
+
+        container.innerHTML += `
+            <div class="mb-8 animate-fade-in">
+                <span class="text-[8px] font-black uppercase tracking-widest ${isAI ? 'text-indigo-400' : 'text-gray-600'}">
+                    ${isAI ? 'Neural Engine Output' : 'Operator Input'}
+                </span>
+                <div class="mt-2 ${isAI ? 'prose prose-invert text-gray-300 text-sm' : 'text-indigo-100/70 text-sm font-mono'}">
+                    ${isAI ? marked.parse(content) : content}
+                </div>
+                ${sourceHtml}
+            </div>`;
+    }
+
+    // --- 3. Generate Logic (Now with persistent Context) ---
     async function generateAIContent() {
         const promptInput = document.getElementById('ai-prompt');
         const rawPrompt = promptInput.value.trim();
         if (!rawPrompt) return;
 
-        const structuredPrompt = `TOPIC/GOAL: ${rawPrompt}\nPLATFORM: ${document.getElementById('platform').value}\nTONE: ${document.getElementById('tone').value}\nLENGTH: ${document.getElementById('length').value}\nDIALECT: ${document.getElementById('regional').value}\nVIRAL: ${document.getElementById('viral').checked}`;
+        // Structured prompt for the engine
+        const structuredPrompt = `TOPIC/GOAL: ${rawPrompt} | PLATFORM: ${document.getElementById('platform').value} | TONE: ${document.getElementById('tone').value} | LENGTH: ${document.getElementById('length').value}`;
 
         const ui = {
             btn: document.getElementById('synth-btn'),
@@ -277,13 +304,18 @@ async function deleteChat(event, id) {
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                // activeChatId yahan bhejna zaroori hai memory ke liye
                 body: JSON.stringify({ prompt: structuredPrompt, chatId: activeChatId })
             });
             const data = await response.json();
 
             if (response.ok) {
-                activeChatId = data.chatId;
+                // Agar naya chat tha, toh ID update karo
+                if(!activeChatId) activeChatId = data.chatId; 
+                
                 promptInput.value = "";
+                
+                // Add user message to UI
                 ui.container.innerHTML += `<div class="mb-6"><span class="text-[8px] font-black text-gray-600 uppercase tracking-widest">Operator Input</span><p class="mt-2 text-sm text-indigo-100/70 font-mono italic">${rawPrompt}</p></div>`;
                 
                 const aiWrapper = document.createElement('div');
@@ -295,13 +327,13 @@ async function deleteChat(event, id) {
                 let i = 0;
                 function typeWriter() {
                     if (i < data.content.length) {
-                        target.innerHTML = marked.parse(data.content.substring(0, i + 5));
-                        i += 5;
+                        target.innerHTML = marked.parse(data.content.substring(0, i + 8));
+                        i += 8;
                         ui.container.scrollTop = ui.container.scrollHeight;
                         setTimeout(typeWriter, 1);
                     } else {
                         if (data.sources) {
-                            const srcHtml = `<div class="mt-4 pt-4 border-t border-white/5 animate-fade-in"><p class="text-[7px] font-black uppercase text-gray-500 mb-3">Verified Sources:</p><div class="flex flex-wrap gap-2">${data.sources.map(s => `<a href="${s.url}" target="_blank" class="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[9px] text-gray-400 hover:text-indigo-400 font-bold"> ${s.title} ↗</a>`).join('')}</div></div>`;
+                            const srcHtml = `<div class="mt-4 pt-4 border-t border-white/5"><p class="text-[7px] font-black uppercase text-gray-500 mb-3">Verified Sources:</p><div class="flex flex-wrap gap-2">${data.sources.map(s => `<a href="${s.url}" target="_blank" class="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[9px] text-gray-400 hover:text-indigo-400 font-bold"> ${s.title} ↗</a>`).join('')}</div></div>`;
                             aiWrapper.insertAdjacentHTML('beforeend', srcHtml);
                         }
                         loadHistory();
@@ -318,6 +350,46 @@ async function deleteChat(event, id) {
         }
     }
 
+    // Delete Logic
+    async function deleteChat(event, id) {
+        event.stopPropagation();
+        if (!confirm("Bhai, delete kar du?")) return;
+        try {
+            const response = await fetch(`/api/chats/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (response.ok) {
+                if (activeChatId === id) {
+                    activeChatId = null;
+                    document.getElementById('ai-response').innerHTML = '<div class="opacity-20 text-[10px] uppercase font-black p-10 text-center">System Cleared. Ready for New Task.</div>';
+                }
+                loadHistory();
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    // New Engine Button Logic
+    function startNewEngine() {
+        activeChatId = null;
+        document.getElementById('ai-response').innerHTML = '<div class="opacity-20 text-[10px] uppercase font-black p-10 text-center">New Neural Link Ready.</div>';
+        loadHistory();
+    }
+
+    // Copy to clipboard
+    async function copyToClipboard() {
+        const aiMessages = document.querySelectorAll('.prose-invert');
+        if (aiMessages.length === 0) return;
+        const lastMessage = aiMessages[aiMessages.length - 1];
+        try {
+            await navigator.clipboard.writeText(lastMessage.innerText);
+            const copyBtn = document.getElementById('copy-text');
+            copyBtn.innerText = "COPIED!";
+            setTimeout(() => copyBtn.innerText = "COPY OUTPUT", 2000);
+        } catch (err) { console.error(err); }
+    }
+
+    // Auth & Init
     function logout() { localStorage.clear(); window.location.href = '/auth'; }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -328,43 +400,7 @@ async function deleteChat(event, id) {
             document.getElementById('user-avatar').innerText = user.name[0].toUpperCase();
         }
         loadHistory();
-
-        // Mobile Menu Logic
-        const openMenu = document.getElementById('open-menu');
-        const overlay = document.getElementById('overlay');
-        const sidebar = document.getElementById('sidebar');
-        if(openMenu) openMenu.onclick = () => { sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); };
-        if(overlay) overlay.onclick = () => { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); };
     });
-    async function copyToClipboard() {
-    const copyText = document.getElementById('copy-text');
-    
-    // 1. Saare AI responses dhundo
-    const aiMessages = document.querySelectorAll('.prose-invert');
-    
-    if (aiMessages.length === 0) return;
-
-    // 2. Sirf sabse latest (aakhri) AI message ka content uthao
-    const lastMessage = aiMessages[aiMessages.length - 1];
-    const textToCopy = lastMessage.innerText;
-
-    try {
-        await navigator.clipboard.writeText(textToCopy);
-        
-        // Feedback logic
-        const originalText = copyText.innerText;
-        copyText.innerText = "Copied!";
-        copyText.classList.add('text-indigo-400');
-        
-        setTimeout(() => {
-            copyText.innerText = originalText;
-            copyText.classList.remove('text-indigo-400');
-        }, 2000);
-        
-    } catch (err) {
-        console.error('Failed to copy: ', err);
-    }
-}
 </script>
 </body>
 </html>
