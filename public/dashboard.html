@@ -12,49 +12,43 @@
         .glass-panel { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Professional Vertical List Styles */
-        #ai-response { scroll-behavior: smooth; }
+        /* Professional Styles */
         .prose h3 { color: #818cf8; font-size: 1.1rem; font-weight: 800; margin: 1.5rem 0 0.75rem 0; border-left: 3px solid #6366f1; padding-left: 10px; }
-        .prose ol, .prose ul { display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0; padding-left: 1.5rem; list-style-position: outside; }
-        .prose li { color: #d1d5db; line-height: 1.6; display: list-item; }
-        .prose p { margin-bottom: 1rem; line-height: 1.7; color: #9ca3af; }
+        .prose ol, .prose ul { display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0; padding-left: 1.5rem; }
+        .prose li { color: #d1d5db; line-height: 1.6; }
         .prose strong { color: #fff; background: rgba(99, 102, 241, 0.2); padding: 0 4px; border-radius: 4px; }
-        
-        /* Table Styling */
         .prose table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 12px; }
         .prose th { background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 10px; text-align: left; border: 1px solid rgba(255,255,255,0.05); }
         .prose td { padding: 10px; border: 1px solid rgba(255,255,255,0.05); }
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #5e5ce6; }
-
+        
         @keyframes scan { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(300px); opacity: 0; } }
         .animate-scan { animation: scan 2s linear infinite; }
     </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen">
 
-    <div id="overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden md:hidden"></div>
+    <div id="overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden"></div>
 
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 md:relative md:translate-x-0 transition-transform duration-300 border-r border-white/5 bg-[#050505] flex flex-col p-6 gap-8">
-        <button id="close-menu" class="md:hidden absolute top-6 right-6 text-gray-400 text-2xl">&times;</button>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 md:relative md:translate-x-0 -translate-x-full transition-transform duration-300 border-r border-white/5 bg-[#050505] flex flex-col p-6 gap-8">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 bg-white flex items-center justify-center rounded-sm">
                 <span class="text-black font-black text-xl tracking-tighter">N</span>
             </div>
             <span class="font-black text-sm uppercase tracking-widest">NicheGen AI</span>
         </div>
-        <nav class="flex flex-col gap-4 flex-1">
-            <a href="/dashboard" class="p-3 bg-white/5 rounded-xl flex items-center gap-3 text-indigo-400">
+        <nav class="flex flex-col gap-4 flex-1 overflow-hidden">
+            <a href="/dashboard" class="p-3 bg-white/5 rounded-xl flex items-center gap-3 text-indigo-400 hover:bg-white/10 transition-all">
                 <span>⊕</span><span class="text-[10px] font-black uppercase">New Engine</span>
             </a>
-            <div class="mt-4 space-y-2 overflow-y-auto max-h-[60vh] no-scrollbar" id="chat-history-list">
+            <div class="mt-4 flex-1 overflow-y-auto no-scrollbar" id="chat-history-list">
                 <p class="text-[8px] text-gray-600 uppercase font-black px-3 tracking-[0.2em] mb-4">Past Sessions</p>
-            </div>
+                </div>
         </nav>
         <div class="mt-auto flex items-center gap-3 p-2 bg-white/5 rounded-full">
-            <div id="user-avatar" class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-[10px] font-bold uppercase"></div>
+            <div id="user-avatar" class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-[10px] font-bold uppercase">U</div>
             <div class="overflow-hidden">
                 <p id="user-name" class="text-[9px] font-black truncate uppercase tracking-widest">Operator</p>
                 <p class="text-[8px] text-indigo-500 font-bold uppercase">Clearance: Level 1</p>
@@ -62,111 +56,158 @@
         </div>
     </aside>
 
-
-   <style>
-    /* Default Sidebar (Mobile) */
-    #sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-        z-index: 50;
-    }
-
-    /* Laptop/Desktop (Above 768px) */
-    @media (min-width: 768px) {
-        #sidebar {
-            transform: translateX(0) !important; /* Hamesha dikhega */
-            position: relative;
-            width: 260px; /* Fixed width for laptop */
-            flex-shrink: 0;
-        }
-        #overlay {
-            display: none !important; /* Laptop pe overlay ki zarurat nahi */
-        }
-        #open-menu {
-            display: none !important; /* Menu button desktop pe hide */
-        }
-    }
-</style>
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-black/50">
             <button id="open-menu" class="md:hidden text-gray-400 hover:text-white"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg></button>
-            <span class="text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em]">Session: Active</span>
-            <div class="flex gap-4">
-                <button class="text-[9px] font-black uppercase tracking-widest border border-white/10 px-4 py-2 rounded-sm" onclick="logout()">Logout</button>
-            </div>
+            <span class="text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em]">Neural Link: Stable</span>
+            <button class="text-[9px] font-black uppercase tracking-widest border border-white/10 px-4 py-2 rounded-sm hover:bg-white/5 transition-all" onclick="logout()">Logout</button>
         </header>
 
-        <div class="flex-1 overflow-hidden flex flex-col p-4 md:p-8 space-y-6">
-            <div class="flex-shrink-0 max-w-4xl mx-auto w-full">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500 mb-4">Targeting Parameters</h2>
-                <div class="relative">
-                    <textarea id="ai-prompt" placeholder="Specify Niche..." class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm focus:outline-none focus:border-indigo-500/40 transition h-32 resize-none font-mono text-indigo-100"></textarea>
-                    <button id="synth-btn" onclick="generateAIContent()" class="absolute bottom-4 right-4 bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all flex items-center gap-2">
-                        <span id="btn-text">Synthesize</span>
-                        <div id="btn-loader" class="hidden w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    </button>
-                </div>
-            </div>
-<div id="search-status-bar" class="hidden max-w-4xl mx-auto w-full flex items-center gap-3 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl mb-2">
-            <div class="flex gap-1">
-                <span class="w-1 h-3 bg-indigo-500 rounded-full animate-bounce"></span>
-                <span class="w-1 h-3 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                <span class="w-1 h-3 bg-indigo-300 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-            </div>
-            <span class="text-[9px] font-black uppercase tracking-widest text-indigo-400">Browsing 2026 Global Data Streams...</span>
-        </div>
-            <div class="flex-1 max-w-4xl mx-auto w-full glass-panel rounded-3xl overflow-hidden flex flex-col relative">
-                <div id="scanning-line" class="hidden absolute top-[64px] left-0 w-full h-[1px] bg-indigo-500/50 shadow-[0_0_15px_indigo] z-20 animate-scan"></div>
-                <div class="flex justify-between items-center p-5 border-b border-white/5 bg-white/[0.02]">
-                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Neural Synthesis Output
-                    </span>
-                    <span class="text-[8px] px-2 py-0.5 border border-indigo-500/30 text-indigo-400 rounded-full">v3.0.4</span>
-                </div>
-                <div id="ai-response" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[#030303]/50">
-                    <div class="opacity-30 flex flex-col gap-2">
-                        <span class="text-[8px] font-black text-indigo-500 uppercase tracking-widest">System</span>
-                        <p class="text-xs font-mono">Waiting for operator input...</p>
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+            <div class="max-w-4xl mx-auto w-full mb-10">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500 mb-6">Targeting Parameters</h2>
+                <div class="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
+                    <textarea id="ai-prompt" placeholder="Specify Niche / Target Audience + Goal..." class="w-full bg-black/20 border border-white/5 rounded-2xl p-6 text-sm focus:outline-none focus:border-indigo-500/40 transition h-32 resize-none font-mono text-indigo-100 mb-6"></textarea>
+                    
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-[8px] font-black uppercase tracking-widest text-gray-500 mb-2">Platform</label>
+                            <select id="platform" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[11px] text-gray-300 outline-none">
+                                <option>LinkedIn Thread</option>
+                                <option>Twitter Hooks</option>
+                                <option>Instagram Reel Script</option>
+                                <option>SEO Blog Outline</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-black uppercase tracking-widest text-gray-500 mb-2">Tone</label>
+                            <select id="tone" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[11px] text-gray-300 outline-none">
+                                <option>Hinglish</option>
+                                <option>Professional Silicon Valley</option>
+                                <option>Desi Hustler</option>
+                                <option>Funny Sarcastic</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-black uppercase tracking-widest text-gray-500 mb-2">Length</label>
+                            <select id="length" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[11px] text-gray-300 outline-none">
+                                <option>Short</option>
+                                <option>Medium</option>
+                                <option>Long-form</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-black uppercase tracking-widest text-gray-500 mb-2">Regional</label>
+                            <select id="regional" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[11px] text-gray-300 outline-none">
+                                <option>Indian Hinglish</option>
+                                <option>Pure Hindi</option>
+                                <option>English-India</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between border-t border-white/5 pt-6">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" id="viral" class="hidden peer">
+                            <div class="w-4 h-4 border border-white/20 rounded peer-checked:bg-indigo-600 transition-all"></div>
+                            <span class="ml-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest group-hover:text-gray-300">Viral Streams (2026)</span>
+                        </label>
+                        <button id="synth-btn" onclick="generateAIContent()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-500 transition-all flex items-center gap-3">
+                            <span id="btn-text">Synthesize</span>
+                            <div id="btn-loader" class="hidden w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <div id="search-status-bar" class="hidden max-w-4xl mx-auto w-full flex items-center gap-3 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl mb-4">
+                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                <span class="text-[9px] font-black uppercase tracking-widest text-indigo-400">Browsing 2026 Data Streams...</span>
+            </div>
+
+ <div class="max-w-4xl mx-auto w-full glass-panel rounded-3xl overflow-hidden flex flex-col h-[500px] md:h-[600px] relative">
+    <div id="scanning-line" class="hidden absolute top-0 left-0 w-full h-[1px] bg-indigo-500 shadow-[0_0_15px_indigo] z-20 animate-scan"></div>
+    
+    <div class="p-5 border-b border-white/5 bg-white/[0.02] flex justify-between items-center flex-shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="text-[9px] font-black uppercase tracking-widest text-gray-500 italic">Neural Engine v3.0.4 Output</span>
+            <span class="text-[8px] text-indigo-500 animate-pulse">● System Live</span>
+        </div>
+        
+        <button onclick="copyToClipboard()" class="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition-all group">
+            <span id="copy-text" class="text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white">Copy Output</span>
+            <svg class="w-3 h-3 text-gray-500 group-hover:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+        </button>
+    </div>
+
+    <div id="ai-response" class="flex-1 overflow-y-auto p-6 space-y-8 bg-[#030303]/30 custom-scrollbar scroll-smooth">
+        <div class="opacity-30">
+            <p class="text-xs font-mono">System Ready. Awaiting Input...</p>
+        </div>
+    </div>
+</div>
         </div>
     </main>
 
-  <script>
+<script>
     let activeChatId = null;
 
-    // --- 1. Load Chat History ---
-    async function loadHistory() {
-        const list = document.getElementById('chat-history-list');
-        const token = localStorage.getItem('token');
-        if (!token) return;
+    // --- 1. Load History (Cleaned Up Titles) ---
+   async function loadHistory() {
+    const list = document.getElementById('chat-history-list');
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-        try {
-            const response = await fetch('/api/chats', { 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
-            const chats = await response.json();
+    try {
+        const response = await fetch('/api/chats', { headers: { 'Authorization': `Bearer ${token}` } });
+        const chats = await response.json();
+        list.innerHTML = '<p class="text-[8px] text-gray-600 uppercase font-black px-3 tracking-[0.2em] mb-4">Past Sessions</p>';
+        
+        chats.forEach(chat => {
+            let displayTitle = chat.title.replace('TOPIC/GOAL:', '').trim();
+            const item = document.createElement('div');
+            item.className = `group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all mb-1 ${activeChatId === chat._id ? 'bg-white/10 border border-indigo-500/30' : 'hover:bg-white/5'}`;
             
-            list.innerHTML = '<p class="text-[8px] text-gray-600 uppercase font-black px-3 tracking-[0.2em] mb-4">Past Sessions</p>';
-            
-            chats.forEach(chat => {
-                const item = document.createElement('div');
-                item.className = `p-3 rounded-xl cursor-pointer transition-all mb-1 ${activeChatId === chat._id ? 'bg-white/10 border border-indigo-500/30' : 'hover:bg-white/5'}`;
-                item.onclick = () => openChat(chat._id);
-                item.innerHTML = `
-                    <div class="flex items-center gap-3 overflow-hidden text-[10px] font-bold uppercase tracking-tight ${activeChatId === chat._id ? 'text-white' : 'text-gray-500'}">
-                        <span>#</span>
-                        <span class="truncate">${chat.title}</span>
-                    </div>`;
-                list.appendChild(item);
-            });
-        } catch (err) { 
-            console.error("History Load Error:", err); 
+            item.innerHTML = `
+                <div class="flex items-center gap-3 text-[10px] font-bold uppercase truncate flex-1" onclick="openChat('${chat._id}')">
+                    <span class="${activeChatId === chat._id ? 'text-indigo-400' : 'text-gray-600'}">#</span>
+                    <span class="truncate ${activeChatId === chat._id ? 'text-white' : 'text-gray-500'}">${displayTitle}</span>
+                </div>
+                <button onclick="deleteChat(event, '${chat._id}')" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded-md transition-all">
+                    <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            `;
+            list.appendChild(item);
+        });
+    } catch (err) { console.error(err); }
+}
+
+// Delete Function
+async function deleteChat(event, id) {
+    event.stopPropagation(); // Chat open na ho jaye click karne par
+    if (!confirm("Bhai, pakka delete karna hai? Ye wapas nahi aayega!")) return;
+
+    try {
+        const response = await fetch(`/api/chats/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (response.ok) {
+            if (activeChatId === id) {
+                activeChatId = null;
+                document.getElementById('ai-response').innerHTML = '<div class="opacity-30"><p class="text-xs font-mono">Chat deleted. System Ready.</p></div>';
+            }
+            loadHistory(); // List refresh karo
         }
+    } catch (err) {
+        console.error("Delete Error:", err);
     }
+}
 
-    // --- 2. Open Existing Chat ---
+    // --- 2. Open Chat (Fixed: Now renders sources from DB) ---
     async function openChat(id) {
         try {
             activeChatId = id;
@@ -175,161 +216,155 @@
             });
             const chat = await response.json();
             const container = document.getElementById('ai-response');
-            
             container.innerHTML = "";
+
             chat.messages.forEach(msg => {
                 const isAI = msg.role === 'assistant';
+                let sourceHtml = "";
+
+                // Agar message ke saath sources hain, toh unhe render karo
+                if (isAI && msg.sources && msg.sources.length > 0) {
+                    sourceHtml = `
+                        <div class="mt-4 pt-4 border-t border-white/5">
+                            <p class="text-[7px] font-black uppercase text-gray-500 mb-2">Sources Found in History:</p>
+                            <div class="flex flex-wrap gap-2">
+                                ${msg.sources.map(src => `
+                                    <a href="${src.url}" target="_blank" class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] text-gray-400 hover:text-indigo-400 transition-all font-bold">
+                                        ${src.title.substring(0, 20)}... ↗
+                                    </a>`).join('')}
+                            </div>
+                        </div>`;
+                }
+
                 container.innerHTML += `
-                    <div class="mb-6 animate-fade-in">
+                    <div class="mb-8">
                         <span class="text-[8px] font-black uppercase tracking-widest ${isAI ? 'text-indigo-400' : 'text-gray-600'}">
                             ${isAI ? 'Neural Engine Output' : 'Operator Input'}
                         </span>
                         <div class="mt-2 ${isAI ? 'prose prose-invert text-gray-300 text-sm' : 'text-indigo-100/70 text-sm font-mono'}">
                             ${isAI ? marked.parse(msg.content) : msg.content}
                         </div>
+                        ${sourceHtml}
                     </div>`;
             });
             container.scrollTop = container.scrollHeight;
             loadHistory();
-        } catch (err) { 
-            console.error("Chat Opening Error:", err); 
-        }
+        } catch (err) { console.error(err); }
     }
 
-    // --- 3. Generate Content (Web Search + Sources Integrated) ---
+    // --- 3. Generate Logic ---
     async function generateAIContent() {
         const promptInput = document.getElementById('ai-prompt');
-        const responseContainer = document.getElementById('ai-response');
-        const synthBtn = document.getElementById('synth-btn');
-        const btnLoader = document.getElementById('btn-loader');
-        const scanningLine = document.getElementById('scanning-line');
-        const searchStatus = document.getElementById('search-status-bar'); 
-        
-        const prompt = promptInput.value.trim();
-        if (!prompt) return;
+        const rawPrompt = promptInput.value.trim();
+        if (!rawPrompt) return;
+
+        const structuredPrompt = `TOPIC/GOAL: ${rawPrompt}\nPLATFORM: ${document.getElementById('platform').value}\nTONE: ${document.getElementById('tone').value}\nLENGTH: ${document.getElementById('length').value}\nDIALECT: ${document.getElementById('regional').value}\nVIRAL: ${document.getElementById('viral').checked}`;
+
+        const ui = {
+            btn: document.getElementById('synth-btn'),
+            loader: document.getElementById('btn-loader'),
+            scan: document.getElementById('scanning-line'),
+            status: document.getElementById('search-status-bar'),
+            container: document.getElementById('ai-response')
+        };
 
         try {
-            // UI States: Enable Loading & Search Indicator
-            btnLoader.classList.remove('hidden');
-            synthBtn.disabled = true;
-            scanningLine.classList.remove('hidden');
-            if(searchStatus) searchStatus.classList.remove('hidden'); 
+            ui.loader.classList.remove('hidden');
+            ui.btn.disabled = true;
+            ui.scan.classList.remove('hidden');
+            ui.status.classList.remove('hidden');
 
             const response = await fetch('/api/generate', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${localStorage.getItem('token')}` 
-                },
-                body: JSON.stringify({ prompt, chatId: activeChatId })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: JSON.stringify({ prompt: structuredPrompt, chatId: activeChatId })
             });
-
             const data = await response.json();
-
-            // Hide Search Status once data arrives
-            if(searchStatus) searchStatus.classList.add('hidden');
 
             if (response.ok) {
                 activeChatId = data.chatId;
                 promptInput.value = "";
+                ui.container.innerHTML += `<div class="mb-6"><span class="text-[8px] font-black text-gray-600 uppercase tracking-widest">Operator Input</span><p class="mt-2 text-sm text-indigo-100/70 font-mono italic">${rawPrompt}</p></div>`;
                 
-                // Add User Bubble
-                responseContainer.innerHTML += `
-                    <div class="mb-6">
-                        <span class="text-[8px] font-black text-gray-600 uppercase tracking-widest">Operator Input</span>
-                        <p class="mt-2 text-sm text-indigo-100/70 font-mono">${prompt}</p>
-                    </div>`;
-                
-                // Prepare AI Output Wrapper
                 const aiWrapper = document.createElement('div');
                 aiWrapper.className = "mb-6";
-                aiWrapper.innerHTML = `
-                    <span class="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Neural Engine Output</span>
-                    <div class="mt-2 prose prose-invert text-gray-300 text-sm leading-relaxed"></div>`;
-                responseContainer.appendChild(aiWrapper);
-                const textTarget = aiWrapper.querySelector('div');
+                aiWrapper.innerHTML = `<span class="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Neural Engine Output</span><div class="mt-2 prose prose-invert text-gray-300 text-sm leading-relaxed"></div>`;
+                ui.container.appendChild(aiWrapper);
+                const target = aiWrapper.querySelector('div');
 
-                // Typing Effect Logic
                 let i = 0;
-                const fullText = data.content;
                 function typeWriter() {
-                    if (i < fullText.length) {
-                        textTarget.innerHTML = marked.parse(fullText.substring(0, i + 1));
-                        i++;
-                        responseContainer.scrollTop = responseContainer.scrollHeight;
-                        setTimeout(typeWriter, 5); 
-                    } else { 
-                        // --- RENDER SOURCES AFTER TYPING ---
-                        if (data.sources && data.sources.length > 0) {
-                            const sourceHtml = `
-                                <div class="mt-4 pt-4 border-t border-white/5 animate-fade-in">
-                                    <p class="text-[7px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Data Sources:</p>
-                                    <div class="flex flex-wrap gap-2">
-                                        ${data.sources.map(src => `
-                                            <a href="${src.url}" target="_blank" class="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-all group">
-                                                <span class="text-[9px] text-gray-400 group-hover:text-indigo-400 font-bold truncate max-w-[150px]">${src.title}</span>
-                                                <span class="text-[8px] text-gray-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">↗</span>
-                                            </a>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            `;
-                            aiWrapper.insertAdjacentHTML('beforeend', sourceHtml);
-                            responseContainer.scrollTop = responseContainer.scrollHeight;
+                    if (i < data.content.length) {
+                        target.innerHTML = marked.parse(data.content.substring(0, i + 5));
+                        i += 5;
+                        ui.container.scrollTop = ui.container.scrollHeight;
+                        setTimeout(typeWriter, 1);
+                    } else {
+                        if (data.sources) {
+                            const srcHtml = `<div class="mt-4 pt-4 border-t border-white/5 animate-fade-in"><p class="text-[7px] font-black uppercase text-gray-500 mb-3">Verified Sources:</p><div class="flex flex-wrap gap-2">${data.sources.map(s => `<a href="${s.url}" target="_blank" class="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[9px] text-gray-400 hover:text-indigo-400 font-bold"> ${s.title} ↗</a>`).join('')}</div></div>`;
+                            aiWrapper.insertAdjacentHTML('beforeend', srcHtml);
                         }
-                        loadHistory(); 
+                        loadHistory();
                     }
                 }
                 typeWriter();
-            } else {
-                alert("Neural Link Interrupted.");
             }
-        } catch (err) { 
-            console.error("Generation Error:", err); 
-        } finally {
-            btnLoader.classList.add('hidden');
-            synthBtn.disabled = false;
-            scanningLine.classList.add('hidden');
-            if(searchStatus) searchStatus.classList.add('hidden');
+        } catch (err) { console.error(err); }
+        finally {
+            ui.loader.classList.add('hidden');
+            ui.btn.disabled = false;
+            ui.scan.classList.add('hidden');
+            ui.status.classList.add('hidden');
         }
     }
 
-    // --- 4. System Helpers ---
-    function logout() { 
-        localStorage.clear(); 
-        window.location.href = '/auth'; 
-    }
+    function logout() { localStorage.clear(); window.location.href = '/auth'; }
 
     document.addEventListener('DOMContentLoaded', () => {
         const userData = localStorage.getItem('user');
         if(userData) {
             const user = JSON.parse(userData);
-            const nameEl = document.getElementById('user-name');
-            const avatarEl = document.getElementById('user-avatar');
-            if(nameEl) nameEl.innerText = user.name;
-            if(avatarEl) avatarEl.innerText = user.name[0].toUpperCase();
+            document.getElementById('user-name').innerText = user.name;
+            document.getElementById('user-avatar').innerText = user.name[0].toUpperCase();
         }
-        
         loadHistory();
-        
+
+        // Mobile Menu Logic
         const openMenu = document.getElementById('open-menu');
         const overlay = document.getElementById('overlay');
         const sidebar = document.getElementById('sidebar');
-
-        if(openMenu) {
-            openMenu.onclick = () => { 
-                sidebar.style.transform = "translateX(0)"; 
-                if(overlay) overlay.classList.remove('hidden'); 
-            };
-        }
-
-        if(overlay) {
-            overlay.onclick = () => { 
-                sidebar.style.transform = "translateX(-100%)"; 
-                overlay.classList.add('hidden'); 
-            };
-        }
+        if(openMenu) openMenu.onclick = () => { sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); };
+        if(overlay) overlay.onclick = () => { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); };
     });
+    async function copyToClipboard() {
+    const copyText = document.getElementById('copy-text');
+    
+    // 1. Saare AI responses dhundo
+    const aiMessages = document.querySelectorAll('.prose-invert');
+    
+    if (aiMessages.length === 0) return;
+
+    // 2. Sirf sabse latest (aakhri) AI message ka content uthao
+    const lastMessage = aiMessages[aiMessages.length - 1];
+    const textToCopy = lastMessage.innerText;
+
+    try {
+        await navigator.clipboard.writeText(textToCopy);
+        
+        // Feedback logic
+        const originalText = copyText.innerText;
+        copyText.innerText = "Copied!";
+        copyText.classList.add('text-indigo-400');
+        
+        setTimeout(() => {
+            copyText.innerText = originalText;
+            copyText.classList.remove('text-indigo-400');
+        }, 2000);
+        
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+    }
+}
 </script>
 </body>
 </html>
