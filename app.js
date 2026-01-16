@@ -93,15 +93,41 @@ app.get('/api/chats', protect, async (req, res) => {
     const chats = await Chat.find({ user: req.user._id }).sort({ updatedAt: -1 });
     res.json(chats);
 });
-// Get specific chat by ID
-// Delete Chat Route
+// --- GET SINGLE CHAT BY ID ---
+app.get('/api/chats/:id', protect, async (req, res) => {
+    try {
+        // ID ko valid format mein check karo aur user ownership verify karo
+        const chat = await Chat.findOne({ 
+            _id: req.params.id, 
+            user: req.user._id 
+        });
+
+        if (!chat) {
+            return res.status(404).json({ message: "Chat session not found in Neural Database" });
+        }
+
+        res.json(chat);
+    } catch (error) {
+        console.error("Fetch Chat Error:", error);
+        res.status(500).json({ message: "Neural Link Failure" });
+    }
+});
+
+// --- DELETE CHAT BY ID ---
 app.delete('/api/chats/:id', protect, async (req, res) => {
     try {
-        const chat = await Chat.findOneAndDelete({ _id: req.params.id, user: req.user._id });
-        if (!chat) return res.status(404).json({ message: "Chat not found" });
-        res.json({ message: "Chat deleted successfully" });
+        const deletedChat = await Chat.findOneAndDelete({ 
+            _id: req.params.id, 
+            user: req.user._id 
+        });
+        
+        if (!deletedChat) {
+            return res.status(404).json({ message: "Chat not found" });
+        }
+        
+        res.json({ message: "Session Purged Successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Server Error" });
+        res.status(500).json({ message: "Delete Operation Failed" });
     }
 });
 // 2.
@@ -136,156 +162,169 @@ async function getFullSearchData(userPrompt) {
     }
 }
 
-// --- MAIN GENERATE ROUTE ---
 
 // --- MAIN GENERATE ROUTE (ULTRA-PREDATOR & LSI EDITION) ---
 app.post('/api/generate', protect, async (req, res) => {
     try {
         const { prompt, chatId } = req.body;
         let currentChat;
-
-        const currentDate = new Date().toLocaleDateString('en-GB', {
-            day: 'numeric', month: 'long', year: 'numeric'
-        });
-
-        // 1. Chat fetch ya create (same)
+        
+        // 1. Memory & Chat Management
         if (chatId) {
             currentChat = await Chat.findOne({ _id: chatId, user: req.user._id });
         }
-
         if (!currentChat) {
-            const cleanTitle = prompt.includes('TOPIC/GOAL:') 
-                ? prompt.split('TOPIC/GOAL:')[1]?.split('\n')[0].trim().substring(0, 40)
-                : prompt.substring(0, 30);
-
-            currentChat = new Chat({ 
-                user: req.user._id, 
-                title: cleanTitle || "New Niche", 
-                messages: [] 
-            });
+            const cleanTitle = prompt.substring(0, 30);
+            currentChat = new Chat({ user: req.user._id, title: cleanTitle, messages: [] });
         }
 
-        // 2. Real-time Search (same)
+        // 2. Dynamic Parameters Extraction (Tone, Length, Platform)
+        const selectedLength = prompt.match(/CONTENT_LENGTH:\s*([^ \n,]+)/i)?.[1].trim() || "Medium";
+        const selectedTone = prompt.match(/TONE:\s*([^ \n,]+)/i)?.[1].trim() || "Desi Hustler";
+        const selectedPlatform = prompt.match(/PLATFORM:\s*([^ \n,]+)/i)?.[1].trim() || "Multi-Channel";
+        
+        const lengthConfig = { "Short": 600, "Medium": 1200, "Long-form": 2500, default: 1000 };
+        const targetTokens = lengthConfig[selectedLength] || lengthConfig.default;
+
+        // 3. 2026 Real-time Market Intel
         const { textContext, sources } = await getFullSearchData(prompt);
 
-        // 3. Conversation Memory (same)
-        const memory = currentChat.messages.map(m => ({
-            role: m.role,
-            content: m.content
-        }));
-
-        // ────────────────────────────────────────────────
-        // IMPROVED Length Detection - More robust regex
-        const lengthConfig = {
-            "Short (100-200 words)": { maxTokens: 180, instruction: "Very punchy, max 3-5 points, under 150 words. No fluff." },
-            "Short": { maxTokens: 180, instruction: "Very punchy, max 3-5 points, under 150 words. No fluff." },
-            "Medium": { maxTokens: 350, instruction: "Balanced, 5-8 points, 200-300 words. Concise." },
-            "Long-form": { maxTokens: 600, instruction: "Detailed, 8-12 points, up to 450 words. Still punchy." },
-            default: { maxTokens: 300, instruction: "Medium length." }
-        };
-
-        let selectedLength = "Medium"; // fallback
-        // Better regex to catch any variation
-        const lengthRegex = /CONTENT_LENGTH:\s*([^ \n]+)/i;
-        const lengthMatch = prompt.match(lengthRegex) || prompt.match(/Length:\s*([^ \n]+)/i);
-        if (lengthMatch) {
-            selectedLength = lengthMatch[1].trim();
-        }
-
-        const config = lengthConfig[selectedLength] || lengthConfig.default;
-        const maxTokens = config.maxTokens;
-        const lengthInstruction = config.instruction;
-
-        // ────────────────────────────────────────────────
-
-        // System Prompt with ultra-strict length
-        const systemPrompt = `You are NicheGen AI (v3.0.4) - The Ultimate SaaS & Content Domination Shark.
-        CURRENT DATE: ${currentDate}. YEAR: 2026.
+        // 4. THE VIRAL PREDATOR SYSTEM PROMPT
+        const systemPrompt = `You are NicheGen AI v4.0 (Predator Mode). 
+        YEAR: 2026. CONTEXT: ${textContext}
         
-        WEB CONTEXT: ${textContext}
+        MISSION: Create content that is impossible to ignore. Use 'Pattern Interrupt' psychology.
         
-        LENGTH RULE - MUST FOLLOW OR FAIL:
-        - STRICTLY: ${lengthInstruction}
-        - NEVER exceed \( {maxTokens} tokens (~ \){Math.floor(maxTokens * 0.75)} words max).
-        - Short: 3-5 points only, ruthless cut.
-        - Medium: 5-8 points, concise.
-        - Long-form: 8-12 points, detailed but short lines.
-        - If over, cut everything non-essential - prioritize impact.
+        STRICT VIRAL PROTOCOLS:
+        1. TONE: Strictly follow ${selectedTone}. If 'Desi Hustler', use aggressive Hinglish (e.g., 'System Hang', 'Zero-Competition Moat').
+        2. STRUCTURE: 
+           - THE KILLER HOOK (First 2 lines must stop the scroll).
+           - THE ACTIONABLE BLUEPRINT (Step-by-step technical implementation).
+           - THE 2026 EDGE (Tools/Trends others don't know yet).
+        3. FORMATTING: Every 200 words MUST have a Markdown Table or a Bold Highlight. ZERO generic filler text.
+        4. VIRAL SCORE: At the end, provide a 'Predictive Viral Score' (1-100%) based on 2026 trends.`;
 
-        STRICT PROTOCOLS FOR UNFAIR ADVANTAGE:
-        1. TONE: Aggressive Desi Hustler (Hinglish). Use "Bhai", "Market fadd dega", "Paisa hi Paisa", "Sapne sach kar".
-        2. STRUCTURE: Use [🚀] for boxes, Markdown Tables for lists, Bold **Titles**. NO LONG PARAGRAPHS - Max 2 lines per point. Actionable, punchy.
-        3. PLATFORM OPTIMIZED: Exactly match user's selected platform format (e.g., Instagram Reel Script: Short script with hook, body, CTA).
-        4. TECH STACK: 2026 standards - Frontend: Next.js 16 + Tailwind, Backend: Node.js + Vercel AI, DB: Pinecone/Supabase, AI: Groq + Gemini chaining.
-        5. X-FACTOR: Always reveal a 'Hidden Opportunity' or 'Defensibility Moat'.
-        6. VIRAL BOOST: If enabled, weave in real-time trends from sources for 99.2% niche accuracy.
-        7. ACCURACY: Precise mapping. End with strong CTA like "Abhi implement kar, market own kar!".
-        8. POWER MODE: Zero-edit ready, high-conversion, emojis/hashtags.`;
-
-        // 4. Groq Draft
+        // 5. Groq Draft (High-Voltage Intelligence)
         const draftCompletion = await groq.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
-                ...memory,
-                { role: "user", content: prompt + `\n\nMANDATORY: Output MUST be under ${maxTokens} tokens. Cut if needed.` }
+                { role: "user", content: `User Prompt: ${prompt}\n\nTask: Generate a raw, high-energy blueprint for ${selectedPlatform}. Target Depth: ${selectedLength}.` }
             ],
             model: "llama-3.3-70b-versatile",
-            temperature: 0.7,
-            max_tokens: maxTokens
+            max_tokens: targetTokens
         });
+        let rawDraft = draftCompletion.choices[0].message.content;
 
-        let draftResponse = draftCompletion.choices[0].message.content.trim();
+        // 6. Gemini LSI & SEO Overhaul (The "Unbeatable" Layer)
+        const keys = [process.env.GEMINI_API_KEY_1, process.env.GEMINI_API_KEY_2];
+        let finalResponse = rawDraft;
 
-        // 5. Gemini Polish (strict limit)
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        for (const key of keys) {
+            if (!key) continue;
+            try {
+                const genAI = new GoogleGenerativeAI(key);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }); 
 
-        const polishPrompt = `Refine STRICTLY under ${Math.floor(maxTokens * 0.85)} tokens max:
-        Keep aggressive Hinglish tone, punchy structure, platform format, X-factor, viral boost.
-        Cut fluff. Sharper, higher-conversion.
-        DO NOT lengthen - shorten if needed.
-        
-        DRAFT: ${draftResponse}`;
+                const polishPrompt = `Act as a 2026 Viral SEO Strategist. 
+                Transform this draft into an UNBEATABLE masterpiece for ${selectedPlatform}.
+                
+                DRAFT: ${rawDraft}
+                
+                POLISH REQUIREMENTS:
+                1. LSI INSERTION: Inject 10+ hidden semantic keywords to dominate 2026 search engines.
+                2. DEPTH & MOAT: If Long-form, add a 'Technical Moat' section explaining how to stay ahead of 99% of competitors.
+                3. HASHTAGS: Provide 3 clusters (High Reach, Niche, LSI-Hidden).
+                4. ACTIONABLE: Add a 'Day 1 Execution Plan' table.
+                5. TONE CHECK: Ensure it sounds exactly like a ${selectedTone}.
+                STRICT UPGRADE RULES:
+1. THE SCROLL STOPPER: Start with a controversial statement about AI agencies in 2026.
+2. AGGRESSIVE HINGLISH: Mix pure English tech terms with raw Desi street-smart Hinglish.
+3. TECHNICAL MOAT: Add a section called "[🔥] SECRET WEAPON" - talk about using "Agentic RAG" or "Autonomous Browser Agents".
+4. LSI CLUSTERS: Inject keywords like 'Token Efficiency', 'Agent Orchestration', 'Inference Optimization'.
+5. FORMATTING: Use emojis, bold text, and markdown tables to make it scannable. 
+6. NO INTRO: Don't say "Bhai, ye post hai...", seedha mudde ki baat karo.`;
 
-        const polishResult = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: polishPrompt }] }],
-            generationConfig: {
-                maxOutputTokens: Math.floor(maxTokens * 0.85),
-                temperature: 0.6
-            }
-        });
+                const result = await model.generateContent({
+                    contents: [{ role: "user", parts: [{ text: polishPrompt }] }],
+                    generationConfig: { maxOutputTokens: targetTokens + 500, temperature: 0.75 }
+                });
 
-        let polishedResponse = polishResult.response.text().trim();
-
-        // Safety truncate
-        const charLimit = maxTokens * 4;
-        if (polishedResponse.length > charLimit) {
-            polishedResponse = polishedResponse.substring(0, charLimit) + "… (trimmed for length)";
+                finalResponse = result.response.text();
+                break;
+            } catch (err) { console.error("Rotating Key..."); }
         }
 
-        // 6. Save (same)
-        currentChat.messages.push({ role: 'user', content: prompt });
-        currentChat.messages.push({ 
-            role: 'assistant', 
-            content: polishedResponse,
-            sources: sources 
-        });
-
-        currentChat.updatedAt = Date.now();
+        // 7. Save & Push
+        currentChat.messages.push({ role: 'user', content: prompt }, { role: 'assistant', content: finalResponse, sources: sources });
         await currentChat.save();
-
-        // 7. Response
-        res.json({ 
-            content: polishedResponse, 
-            chatId: currentChat._id,
-            sources: sources 
-        });
+        res.json({ content: finalResponse, chatId: currentChat._id, sources: sources });
 
     } catch (error) {
-        console.error("Neural Link Error:", error);
-        res.status(500).json({ message: "Neural Link Search Failed." });
+        console.error("Neural Error:", error);
+        res.status(500).json({ message: "Engine Overheat. Try in 30s." });
     }
 });
+const { InferenceClient } = require('@huggingface/inference');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
+const hf = new InferenceClient(process.env.HF_TOKEN);
+// Ye endpoint tera HTML call karega
+app.post('/generate-image', async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
+    return res.status(400).json({ error: 'Prompt daal bhai, khali mat chhod!' });
+  }
+
+  try {
+    console.log('Prompt mila:', prompt);
+
+    // FLUX.1-schnell — free tier mein fast + achhi quality (1-4 steps)
+    // 2026 mein bhi ye popular hai, direct HF token se chalta hai (provider default huggingface.co)
+    const blob = await hf.textToImage({
+      model: 'black-forest-labs/FLUX.1-schnell',
+      inputs: prompt.trim(),
+      // Optional: agar chahiye to add kar sakta hai
+      // parameters: {
+      //   num_inference_steps: 4,
+      //   guidance_scale: 0,
+      //   height: 1024,
+      //   width: 1024
+      // }
+    });
+
+    // Blob → Buffer
+    const arrayBuffer = await blob.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Unique filename (public folder mein save)
+    const filename = `generated_${uuidv4().slice(0, 8)}.png`;
+    const filePath = path.join(__dirname, 'public', filename);
+
+    fs.writeFileSync(filePath, buffer);
+    console.log(`Image save: ${filename}`);
+
+    // Frontend ko image URL bhej (public folder static hai to /filename direct access hoga)
+    const imageUrl = `/${filename}`;
+
+    res.json({ imageUrl });
+
+  } catch (error) {
+    console.error('Error bhai:', error.message || error);
+
+    let errMsg = 'Kuch gadbad ho gayi';
+    if (error.status === 429) {
+      errMsg = 'Rate limit hit! Free tier mein thoda wait kar (1-2 min ya zyada requests mat kar)';
+    } else if (error.status === 401 || error.status === 403) {
+      errMsg = 'Token galat ya invalid hai — .env check kar ya naya token generate kar';
+    } else if (error.message.includes('model')) {
+      errMsg = 'Model issue — FLUX.1-schnell available nahi ya quota khatam';
+    }
+
+    res.status(500).json({ error: errMsg });
+  }
+});
+
 
 // --- DATABASE & SERVER START ---
 mongoose.connect(process.env.MONGO_URI)
@@ -295,4 +334,3 @@ mongoose.connect(process.env.MONGO_URI)
         app.listen(PORT, () => console.log(`🚀 Engine running on port ${PORT}`));
     })
     .catch(err => console.log('❌ DB Connection Error:', err));
-
