@@ -143,116 +143,147 @@ app.post('/api/generate', protect, async (req, res) => {
     try {
         const { prompt, chatId } = req.body;
         let currentChat;
-        
-        // 1. Chat Setup (Memory Management)
-        if (chatId) {
-            currentChat = await Chat.findOne({ _id: chatId, user: req.user._id });
-        }
-        if (!currentChat) {
-            const cleanTitle = prompt.includes('TOPIC/GOAL:') 
-                ? prompt.split('TOPIC/GOAL:')[1].split('\n')[0].trim().substring(0, 40)
-                : prompt.substring(0, 30);
-            currentChat = new Chat({ user: req.user._id, title: cleanTitle, messages: [] });
-        }
 
         const currentDate = new Date().toLocaleDateString('en-GB', {
             day: 'numeric', month: 'long', year: 'numeric'
         });
 
-        // 2. Real-time Search Context (The 2026 Competitive Edge)
+        // 1. Chat fetch ya create (same)
+        if (chatId) {
+            currentChat = await Chat.findOne({ _id: chatId, user: req.user._id });
+        }
+
+        if (!currentChat) {
+            const cleanTitle = prompt.includes('TOPIC/GOAL:') 
+                ? prompt.split('TOPIC/GOAL:')[1]?.split('\n')[0].trim().substring(0, 40)
+                : prompt.substring(0, 30);
+
+            currentChat = new Chat({ 
+                user: req.user._id, 
+                title: cleanTitle || "New Niche", 
+                messages: [] 
+            });
+        }
+
+        // 2. Real-time Search (same)
         const { textContext, sources } = await getFullSearchData(prompt);
+
+        // 3. Conversation Memory (same)
+        const memory = currentChat.messages.map(m => ({
+            role: m.role,
+            content: m.content
+        }));
+
+        // ────────────────────────────────────────────────
+        // IMPROVED Length Detection - More robust regex
+        const lengthConfig = {
+            "Short (100-200 words)": { maxTokens: 180, instruction: "Very punchy, max 3-5 points, under 150 words. No fluff." },
+            "Short": { maxTokens: 180, instruction: "Very punchy, max 3-5 points, under 150 words. No fluff." },
+            "Medium": { maxTokens: 350, instruction: "Balanced, 5-8 points, 200-300 words. Concise." },
+            "Long-form": { maxTokens: 600, instruction: "Detailed, 8-12 points, up to 450 words. Still punchy." },
+            default: { maxTokens: 300, instruction: "Medium length." }
+        };
+
+        let selectedLength = "Medium"; // fallback
+        // Better regex to catch any variation
+        const lengthRegex = /CONTENT_LENGTH:\s*([^ \n]+)/i;
+        const lengthMatch = prompt.match(lengthRegex) || prompt.match(/Length:\s*([^ \n]+)/i);
+        if (lengthMatch) {
+            selectedLength = lengthMatch[1].trim();
+        }
+
+        const config = lengthConfig[selectedLength] || lengthConfig.default;
+        const maxTokens = config.maxTokens;
+        const lengthInstruction = config.instruction;
+
+        // ────────────────────────────────────────────────
+
+        // System Prompt with ultra-strict length
+        const systemPrompt = `You are NicheGen AI (v3.0.4) - The Ultimate SaaS & Content Domination Shark.
+        CURRENT DATE: ${currentDate}. YEAR: 2026.
         
-        const lengthConfig = { "Short": 400, "Medium": 800, "Long-form": 1500, default: 600 };
-        const selectedLength = prompt.match(/CONTENT_LENGTH:\s*([^ \n,]+)/i)?.[1].trim() || "Medium";
-        const targetTokens = lengthConfig[selectedLength] || lengthConfig.default;
+        WEB CONTEXT: ${textContext}
+        
+        LENGTH RULE - MUST FOLLOW OR FAIL:
+        - STRICTLY: ${lengthInstruction}
+        - NEVER exceed \( {maxTokens} tokens (~ \){Math.floor(maxTokens * 0.75)} words max).
+        - Short: 3-5 points only, ruthless cut.
+        - Medium: 5-8 points, concise.
+        - Long-form: 8-12 points, detailed but short lines.
+        - If over, cut everything non-essential - prioritize impact.
 
-        // 3. PREDATOR SYSTEM PROMPT (Actionable & Viral)
-        const systemPrompt = `You are NicheGen AI (v3.0.4) - The Ultimate Content Predator. 
-CURRENT DATE: ${currentDate}. YEAR: 2026. 
-CONTEXT (2026 Live Market Intel): ${textContext}
+        STRICT PROTOCOLS FOR UNFAIR ADVANTAGE:
+        1. TONE: Aggressive Desi Hustler (Hinglish). Use "Bhai", "Market fadd dega", "Paisa hi Paisa", "Sapne sach kar".
+        2. STRUCTURE: Use [🚀] for boxes, Markdown Tables for lists, Bold **Titles**. NO LONG PARAGRAPHS - Max 2 lines per point. Actionable, punchy.
+        3. PLATFORM OPTIMIZED: Exactly match user's selected platform format (e.g., Instagram Reel Script: Short script with hook, body, CTA).
+        4. TECH STACK: 2026 standards - Frontend: Next.js 16 + Tailwind, Backend: Node.js + Vercel AI, DB: Pinecone/Supabase, AI: Groq + Gemini chaining.
+        5. X-FACTOR: Always reveal a 'Hidden Opportunity' or 'Defensibility Moat'.
+        6. VIRAL BOOST: If enabled, weave in real-time trends from sources for 99.2% niche accuracy.
+        7. ACCURACY: Precise mapping. End with strong CTA like "Abhi implement kar, market own kar!".
+        8. POWER MODE: Zero-edit ready, high-conversion, emojis/hashtags.`;
 
-MISSION: Generate an ACTIONABLE BLUEPRINT. User ko aisi cheez do jo wo seedha copy-paste karke viral kar sake.
-
-STRICT DOMINATION PROTOCOLS:
-1. THE KILLER HOOK: Start with a "Controversial Truth" or "Pattern Interrupt". 
-2. STRUCTURE: 
-   - [🚀] THE UNFAIR ADVANTAGE: Secret growth hack.
-   - [🛠️] THE PREDATOR STACK: Technical step-by-step (e.g., Vercel AI SDK 4.0, Agentic Workflows).
-   - [💰] THE MONEY MOAT: Monetization/Defensibility strategy.
-3. TONE: Aggressive Desi Hustler (Hinglish). Use "Market fadd dega", "System Hang", "Cheat Code".
-4. FORMATTING: Use Markdown Tables for data/pricing. ZERO long paragraphs.
-"MANDATORY: Every response MUST include at least one Markdown Table comparing tech or pricing."`;
-
-        // 4. Groq Draft (Fast Initial Intelligence)
+        // 4. Groq Draft
         const draftCompletion = await groq.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: `${prompt}\n\nCreate a raw high-voltage draft. Focus on direct implementation. Length: ${selectedLength}.` }
+                ...memory,
+                { role: "user", content: prompt + `\n\nMANDATORY: Output MUST be under ${maxTokens} tokens. Cut if needed.` }
             ],
             model: "llama-3.3-70b-versatile",
-            max_tokens: Math.floor(targetTokens * 0.7)
+            temperature: 0.7,
+            max_tokens: maxTokens
         });
-        let finalResponse = draftCompletion.choices[0].message.content;
 
-        // 5. Gemini Polish with Multi-Key Rotation & LSI Logic
-        const keys = [process.env.GEMINI_API_KEY_1, process.env.GEMINI_API_KEY_2];
-        let polished = false;
+        let draftResponse = draftCompletion.choices[0].message.content.trim();
 
-        for (const key of keys) {
-            if (!key) continue;
-            try {
-                const genAI = new GoogleGenerativeAI(key);
-                // Gemini 2.0 Flash is state-of-the-art for 2026
-                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
+        // 5. Gemini Polish (strict limit)
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-                const polishPrompt = `Act as a Viral SEO Architect & LSI (Latent Semantic Indexing) Expert. 
-                Transform this draft into a Client-Ready Actionable Blueprint:
-                
-                DRAFT: ${finalResponse}
+        const polishPrompt = `Refine STRICTLY under ${Math.floor(maxTokens * 0.85)} tokens max:
+        Keep aggressive Hinglish tone, punchy structure, platform format, X-factor, viral boost.
+        Cut fluff. Sharper, higher-conversion.
+        DO NOT lengthen - shorten if needed.
+        
+        DRAFT: ${draftResponse}`;
 
-                STRICT POLISH RULES:
-                1. SEMANTIC SEO: Embed 5 hidden LSI keywords trending in 2026 context.
-                2. HASHTAG CLUSTERS: End with 3 sets: #HighVolume, #NicheSpecific, and #LSI_Hidden (Low competition, High reach).
-                3. AGGRESSIVE HOOKS: Make the first 2 lines absolute fire.
-                4. VIRAL FLOW: Add 2026 tech moats and ensure 99.2% zero-edit readiness.
-                5. TARGET DEPTH: Exactly match ${selectedLength} requirements.`;
-
-                const polishResult = await model.generateContent({
-                    contents: [{ role: "user", parts: [{ text: polishPrompt }] }],
-                    generationConfig: { maxOutputTokens: targetTokens, temperature: 0.65 }
-                });
-
-                finalResponse = polishResult.response.text();
-                polished = true;
-                console.log(`✅ Key Success: Gemini LSI Polish Complete.`);
-                break;
-            } catch (geminiError) {
-                console.error(`⚠️ Key Rotation in progress...`);
+        const polishResult = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: polishPrompt }] }],
+            generationConfig: {
+                maxOutputTokens: Math.floor(maxTokens * 0.85),
+                temperature: 0.6
             }
+        });
+
+        let polishedResponse = polishResult.response.text().trim();
+
+        // Safety truncate
+        const charLimit = maxTokens * 4;
+        if (polishedResponse.length > charLimit) {
+            polishedResponse = polishedResponse.substring(0, charLimit) + "… (trimmed for length)";
         }
 
-        if (!polished) {
-            finalResponse += "\n\n*(Optimized by NicheGen FastEngine - Direct Implementation Mode)*";
-        }
-
-        // 6. Database Persistence & API Response
+        // 6. Save (same)
         currentChat.messages.push({ role: 'user', content: prompt });
         currentChat.messages.push({ 
             role: 'assistant', 
-            content: finalResponse, 
+            content: polishedResponse,
             sources: sources 
         });
 
+        currentChat.updatedAt = Date.now();
         await currentChat.save();
+
+        // 7. Response
         res.json({ 
-            content: finalResponse, 
-            chatId: currentChat._id, 
+            content: polishedResponse, 
+            chatId: currentChat._id,
             sources: sources 
         });
 
     } catch (error) {
         console.error("Neural Link Error:", error);
-        res.status(500).json({ message: "System Overload. Try again in 60s." });
+        res.status(500).json({ message: "Neural Link Search Failed." });
     }
 });
 
@@ -264,3 +295,4 @@ mongoose.connect(process.env.MONGO_URI)
         app.listen(PORT, () => console.log(`🚀 Engine running on port ${PORT}`));
     })
     .catch(err => console.log('❌ DB Connection Error:', err));
+
